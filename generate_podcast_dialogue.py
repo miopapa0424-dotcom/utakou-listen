@@ -58,6 +58,7 @@ PODCAST_TITLE  = "聴く詩考"
 PODCAST_AUTHOR = ""            # アプリのタイトル下に名前を出さない（空＝非表示）
 PODCAST_DESC   = "歌詞の解釈を、二人の声で読み解く番組。AIによるひとつの解釈です。"
 PODCAST_LANG   = "ja"
+COVER_FILE     = "cover-v2.jpg"   # カバー差し替え時はここの番号を上げる（アプリの画像キャッシュ回避）
 JST = timezone(timedelta(hours=9))
 
 # --- ElevenLabs（任意・有料／キーと両声IDがそろえば優先・無ければ無料edge-tts）---
@@ -259,9 +260,9 @@ def render_feed(eps: list) -> str:
     <itunes:summary>{html.escape(PODCAST_DESC)}</itunes:summary>
     <itunes:explicit>false</itunes:explicit>
     <itunes:category text="Music"/>
-    <itunes:image href="{BASE_URL}/cover.jpg"/>
+    <itunes:image href="{BASE_URL}/{COVER_FILE}"/>
     <image>
-      <url>{BASE_URL}/cover.jpg</url>
+      <url>{BASE_URL}/{COVER_FILE}</url>
       <title>{html.escape(PODCAST_TITLE)}</title>
       <link>{BASE_URL}/</link>
     </image>
