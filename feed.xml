@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+  <channel>
+    <title>聴く詩考</title>
+    <link>https://miopapa0424-dotcom.github.io/utakou-listen/</link>
+    <language>ja</language>
+    <description>歌詞の解釈を、二人の声で読み解く番組。AIによるひとつの解釈です。</description>
+    <lastBuildDate>Fri, 19 Jun 2026 17:13:13 +0900</lastBuildDate>
+    <itunes:author></itunes:author>
+    <itunes:summary>歌詞の解釈を、二人の声で読み解く番組。AIによるひとつの解釈です。</itunes:summary>
+    <itunes:explicit>false</itunes:explicit>
+    <itunes:category text="Music"/>
+    <itunes:image href="https://miopapa0424-dotcom.github.io/utakou-listen/cover-v2.jpg"/>
+    <image>
+      <url>https://miopapa0424-dotcom.github.io/utakou-listen/cover-v2.jpg</url>
+      <title>聴く詩考</title>
+      <link>https://miopapa0424-dotcom.github.io/utakou-listen/</link>
+    </image>
+    <item>
+      <title>ひざまくら｜聴く詩考</title>
+      <description>ひざまくら｜聴く詩考</description>
+      <pubDate>Fri, 19 Jun 2026 17:13:00 +0900</pubDate>
+      <guid isPermaLink="false">2026-06-19-hizamakura-3.mp3</guid>
+      <enclosure url="https://miopapa0424-dotcom.github.io/utakou-listen/episodes/2026-06-19-hizamakura-3.mp3" length="1272236" type="audio/mpeg"/>
+      <itunes:duration>00:02:39</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>素顔｜聴く詩考</title>
+      <description>素顔｜聴く詩考</description>
+      <pubDate>Fri, 19 Jun 2026 17:12:44 +0900</pubDate>
+      <guid isPermaLink="false">2026-06-19-sugao-3.mp3</guid>
+      <enclosure url="https://miopapa0424-dotcom.github.io/utakou-listen/episodes/2026-06-19-sugao-3.mp3" length="1564652" type="audio/mpeg"/>
+      <itunes:duration>00:03:15</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>順子｜聴く詩考</title>
+      <description>順子｜聴く詩考</description>
+      <pubDate>Fri, 19 Jun 2026 17:05:24 +0900</pubDate>
+      <guid isPermaLink="false">2026-06-19-junko-3.mp3</guid>
+      <enclosure url="https://miopapa0424-dotcom.github.io/utakou-listen/episodes/2026-06-19-junko-3.mp3" length="1402028" type="audio/mpeg"/>
+      <itunes:duration>00:02:55</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+  </channel>
+</rss>
