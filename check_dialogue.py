@@ -50,12 +50,18 @@ def main():
 
     full = "\n".join(t[1] for t in turns)
 
-    # 🔴 歌詞の混入
+    # 🔴 歌詞スロット／太字引用（＝記事の歌詞核書式）の混入
     for n, line in enumerate(lines, 1):
-        if "『" in line or "』" in line:
-            red.append(f"L{n}: 『…』明示引用の疑い（歌詞ゼロ原則違反）→ 除外する")
-        if re.search(r"〔核\s*\d*\s*[｜|]?\s*lyrics", line) or "lyrics_" in line:
-            red.append(f"L{n}: 〔核N｜lyrics_…〕スロットの混入（歌詞）→ 除外する")
+        if "〔核" in line or "lyrics_" in line or re.search(r"〔.*lyrics", line):
+            red.append(f"L{n}: 〔核…｜lyrics…〕スロットの混入（歌詞）→ 除外する")
+        if re.search(r"[「『]\s*\*\*.+?\*\*\s*[」』]", line):
+            red.append(f"L{n}: 太字の引用「**…**」（記事の歌詞核書式）→ 歌詞は音声に入れない")
+    # 🟡 引用符の中身は曲名・作品名ならOK／歌詞ならNG（人手で一瞥）
+    for n, line in enumerate(lines, 1):
+        for q in re.findall(r"『([^』]{1,40})』", line):
+            yellow.append(f"L{n}: 『{q}』← 曲名・作品名か確認（歌詞ならNG）")
+        for q in re.findall(r"「([^」]{13,40})」", line):
+            yellow.append(f"L{n}: 「{q}」← 歌詞でないか確認")
 
     # 🔴 「話者」
     for n, line in enumerate(lines, 1):

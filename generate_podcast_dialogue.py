@@ -33,6 +33,12 @@ from pathlib import Path
 
 import edge_tts
 
+try:                                    # 同梱ffmpeg（滑らかな結合に使用）
+    import imageio_ffmpeg
+    FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
+except Exception:
+    FFMPEG = None
+
 # ============ 設定（ここだけ書き換える） ============
 REPO_DIR   = Path(__file__).resolve().parent
 BASE_URL   = "https://miopapa0424-dotcom.github.io/utakou-listen"   # 末尾スラッシュ無し
@@ -41,7 +47,12 @@ SPEAKERS   = {                       # 話者ラベル → 声
     "読み解き手": "ja-JP-KeitaNeural",    # 男性・解釈を噛み砕く
 }
 DEFAULT_SPEAKER = "聞き手"
-RATE       = "+0%"
+# 読み上げ専用の読みかえ（表示タイトルには影響しない）。詩考＝うたこう。
+READINGS = {
+    "詩考": "うたこう",
+}
+RATE       = "-4%"                   # ほんの少しゆっくり＝解説向きで落ち着いた口調
+PAUSE_SEC  = 0.4                     # 話者の切り替わりに入れる自然な“間”（秒）
 KEEP_N     = 200                     # 残すエピソード数（詩考はアーカイブ的に長く保持）
 PODCAST_TITLE  = "聴く詩考"
 PODCAST_AUTHOR = "やすひろ"
@@ -61,6 +72,8 @@ def clean_for_speech(text: str) -> str:
     text = re.sub(r"https?://[^\s)]+", "", text)
     text = re.sub(r"[`*_#>|]", "", text)
     text = re.sub(r"[ \t]+", " ", text)
+    for kanji, yomi in READINGS.items():          # 音声だけ読みかえ（詩考→うたこう 等）
+        text = text.replace(kanji, yomi)
     return text.strip()
 
 
@@ -106,24 +119,50 @@ def seg_duration(path: Path, fallback_text: str = "") -> float:
         return max(1.0, len(fallback_text) / 6.5)
 
 
+def _stitch_with_ffmpeg(seg_paths, tmp_dir: Path, out_path: Path) -> float:
+    """話者間に“間”を入れ、再エンコードして継ぎ目を均した1本のmp3にする。"""
+    silence = tmp_dir / "_sil.mp3"
+    subprocess.run([FFMPEG, "-y", "-f", "lavfi", "-t", str(PAUSE_SEC),
+                    "-i", "anullsrc=r=24000:cl=mono",
+                    "-c:a", "libmp3lame", "-b:a", "64k", str(silence)],
+                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    lines = []
+    for i, seg in enumerate(seg_paths):
+        lines.append(f"file '{seg.as_posix()}'")
+        if i != len(seg_paths) - 1:
+            lines.append(f"file '{silence.as_posix()}'")
+    listing = tmp_dir / "list.txt"
+    listing.write_text("\n".join(lines), encoding="utf-8")
+    subprocess.run([FFMPEG, "-y", "-f", "concat", "-safe", "0", "-i", str(listing),
+                    "-c:a", "libmp3lame", "-b:a", "64k", str(out_path)],
+                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        from mutagen.mp3 import MP3
+        return float(MP3(str(out_path)).info.length)
+    except Exception:
+        return sum(seg_duration(s) for s in seg_paths) + PAUSE_SEC * (len(seg_paths) - 1)
+
+
 async def build_episode_mp3(turns, out_path: Path) -> int:
-    """各セリフを話者の声で合成し、1本のmp3に連結する。総再生秒を返す。"""
+    """各セリフを話者の声で合成し、滑らかに結合した1本のmp3にする。総再生秒を返す。"""
     tmp_dir = EP_DIR / "_segments"
     if tmp_dir.exists():
         shutil.rmtree(tmp_dir)
     tmp_dir.mkdir(parents=True, exist_ok=True)
-    total = 0.0
     seg_paths = []
+    total = 0.0
     for i, (speaker, text) in enumerate(turns):
         voice = SPEAKERS.get(speaker, SPEAKERS[DEFAULT_SPEAKER])
         seg = tmp_dir / f"{i:03d}.mp3"
         await synth_segment(text, voice, seg)
         seg_paths.append(seg)
         total += seg_duration(seg, text)
-    # mp3 をバイト連結（edge-ttsのmp3は素直に連結再生できる）
-    with open(out_path, "wb") as out:
-        for seg in seg_paths:
-            out.write(seg.read_bytes())
+    if FFMPEG:
+        total = _stitch_with_ffmpeg(seg_paths, tmp_dir, out_path)   # 滑らかに結合
+    else:
+        with open(out_path, "wb") as out:                          # 予備：単純連結
+            for seg in seg_paths:
+                out.write(seg.read_bytes())
     shutil.rmtree(tmp_dir, ignore_errors=True)
     return int(total)
 
